@@ -1,30 +1,39 @@
 # RaceLog
 
-A web app for reviewing RC car GPS telemetry logged by a RadioMaster MT12
-(EdgeTX) + a GPS telemetry sensor (e.g. RadioMaster ERS-GPS) — upload a log,
-get MoTeC/VRS-style charts and a speed-colored track map. Deployable to
-Vercel; no local install needed to use it.
+A web app for reviewing RC car telemetry — real cars via a RadioMaster
+MT12 (EdgeTX) + a GPS sensor (e.g. RadioMaster ERS-GPS), or VRC Pro (the
+sim) via a local bridge that reads the game's own memory. Either way you
+get MoTeC/VRS-style charts and a speed-colored track map. The webapp
+itself is deployable to Vercel; only the import step that needs to touch
+your own PC/radio runs locally.
 
 ## How it works
 
-1. **On the radio:** enable EdgeTX's native **SD Logs** (Model Setup →
-   Logs) — no custom Lua script needed. Put the GPS sensor in **position
-   mode** (continuous lat/lon); the app derives speed and laps itself from
-   the GPS trace, so one mode covers both position and speed. Set the
-   logging **Interval** to 0.1s (10Hz, the fastest EdgeTX supports).
-2. **Get the file off the radio:** pull the microSD card, or connect via
-   USB-C (to a PC, or an OTG-capable Android phone) and copy the `.csv`
-   from `/LOGS/`.
-3. **Upload it here:** the Import page reads the file's actual column
+**Real car (EdgeTX + GPS sensor):**
+1. Enable EdgeTX's native **SD Logs** (Model Setup → Logs) — no custom
+   Lua script needed. Put the GPS sensor in **position mode** (continuous
+   lat/lon); the app derives speed and laps itself from the GPS trace, so
+   one mode covers both position and speed. Set the logging **Interval**
+   to 0.1s (10Hz, the fastest EdgeTX supports).
+2. Pull the microSD card, or connect via USB-C (to a PC, or an
+   OTG-capable Android phone) and copy the `.csv` from `/LOGS/`.
+3. Upload it on the **Import** page — it reads the file's actual column
    headers and lets you map which channel is throttle/brake/steering
    (naming varies by radio setup), then imports it.
-4. **Review:** time-synced Speed/RPM/Throttle-Brake-Steering charts plus a
-   speed-colored track map, with a per-lap filter.
 
-This only handles the EdgeTX CSV log path — there's no VRC Pro / sim
-integration here (that's a separate, local-only project, since it needs
-to read a running game's process memory or local save files, which only
-makes sense running on the same PC as the game).
+**VRC Pro (the sim):** VRC Pro has no telemetry API, and its `.rpl`
+replay files turned out to be encrypted (confirmed by entropy analysis of
+real files, not just an obscure format), so there's no file to parse.
+`vrc-bridge/` is a small Python tool you run on the same Windows PC as
+the game: it reads the game's live process memory while you drive, then
+uploads the finished session to this webapp over HTTPS. See
+[`vrc-bridge/README.md`](vrc-bridge/README.md) for setup (it needs
+one-time memory-offset discovery, same idea as setting up a Cheat Engine
+table).
+
+**Either way, review is the same:** time-synced Speed/RPM/
+Throttle-Brake-Steering charts plus a speed-colored track map, with a
+per-lap filter, and an **Export to MoTeC (.ld)** button.
 
 ## Stack
 
@@ -58,6 +67,13 @@ makes sense running on the same PC as the game).
   not yet opened in real MoTeC i2 software — if a generated file doesn't
   import cleanly, the channel metadata layout in `motecLd.ts` is the
   first place to check.
+- **`POST /api/import/raw`** — accepts a session as plain JSON
+  (`{name, source, samples}`, already in our `Sample` shape) rather than
+  parsing a file. This is what `vrc-bridge/` posts to after recording
+  from VRC Pro's memory; the EdgeTX importer could in principle use it
+  too, but that one already does its own parsing server-side from the
+  raw CSV upload. Optionally protected by `IMPORT_TOKEN` — see
+  `.env.example`.
 
 ## Local development
 

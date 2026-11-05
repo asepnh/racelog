@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# vrc-bridge (Python) -- config.yaml holds real memory offsets + the
+# import token, same reasoning as .env* above
+vrc-bridge/config.yaml
+vrc-bridge/__pycache__/
+vrc-bridge/*.pyc
+vrc-bridge/.venv/

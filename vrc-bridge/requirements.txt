@@ -1,0 +1,5 @@
+PyYAML>=6.0
+requests>=2.31
+
+# Windows-only -- this is the whole point of this tool
+pymem>=1.13; sys_platform == "win32"

@@ -1,0 +1,26 @@
+# Copy to config.yaml and fill in your webapp URL + (once found) the
+# memory offsets for your installed VRC Pro version.
+
+webapp_url: "https://rcracelog.vercel.app"
+# Only needed if the deployed webapp has IMPORT_TOKEN set as an env var --
+# match it here so the bridge is allowed to push sessions.
+import_token: ""
+
+process_name: "VRC PRO.exe"
+module_name: "VRC PRO.exe"
+poll_hz: 60
+
+# See README.md's "Finding offsets" section. Each entry is a static
+# base_offset (from the module's own base address, stable across runs)
+# plus a pointer chain of offsets to follow down to the value itself.
+# The values below are placeholders -- they do nothing until replaced
+# with real offsets found via scanner.py or Cheat Engine.
+fields:
+  speed_kph: { base_offset: 0x0, offsets: [0x0], type: float }
+  rpm:       { base_offset: 0x0, offsets: [0x0], type: float }
+  throttle:  { base_offset: 0x0, offsets: [0x0], type: float }
+  brake:     { base_offset: 0x0, offsets: [0x0], type: float }
+  steering:  { base_offset: 0x0, offsets: [0x0], type: float }
+  pos_x:     { base_offset: 0x0, offsets: [0x0], type: float }
+  pos_y:     { base_offset: 0x0, offsets: [0x0], type: float }
+  lap:       { base_offset: 0x0, offsets: [0x0], type: int }
