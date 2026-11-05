@@ -73,6 +73,11 @@ export default function Dashboard({
             <option key={l} value={l}>Lap {l}</option>
           ))}
         </select>
+        {!demo && selected !== null && (
+          <a href={`/api/sessions/${selected}/export/motec`}>
+            <button type="button">Export to MoTeC (.ld)</button>
+          </a>
+        )}
         {loading && <span className="status">Loading...</span>}
       </div>
 

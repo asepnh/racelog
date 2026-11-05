@@ -41,6 +41,23 @@ makes sense running on the same PC as the game).
   consecutive fixes (smoothed), detects laps by watching the car leave
   and return to its start point, and normalizes whatever raw channel
   range EdgeTX logged (e.g. -1024..1024) down to -1..1 / 0..1.
+- **`lib/motecLd.ts`** / **`lib/motecExport.ts`** — exports a session as a
+  native MoTeC `.ld` file (button on the Review/Dashboard view). MoTeC's
+  `.ld` format is undocumented; the byte layout here is ported from the
+  open-source [ldparser](https://github.com/gotzl/ldparser) project,
+  whose author validated its writer against real MoTeC i2 Pro and ACC
+  output. `motecExport.ts` handles the gap between our data and what
+  `.ld` needs: samples can have gaps/nulls and aren't on an exact
+  fixed-rate grid, but every `.ld` channel is a flat array at one
+  declared frequency with no missing values, so it estimates a sample
+  rate, resamples each channel onto a uniform grid (linear
+  interpolation), and skips any channel with no real data (e.g. RPM when
+  there's no RPM sensor) rather than writing a misleading all-zero one.
+  Verified structurally (header/event/channel offsets, file size, and
+  channel values all decode correctly when read back byte-by-byte) but
+  not yet opened in real MoTeC i2 software — if a generated file doesn't
+  import cleanly, the channel metadata layout in `motecLd.ts` is the
+  first place to check.
 
 ## Local development
 

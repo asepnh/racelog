@@ -49,6 +49,9 @@ export default function ReviewClient({ sessionId }: { sessionId: number }) {
             <option key={l} value={l}>Lap {l}</option>
           ))}
         </select>
+        <a href={`/api/sessions/${sessionId}/export/motec`}>
+          <button type="button">Export to MoTeC (.ld)</button>
+        </a>
         <button onClick={onDelete}>Delete Session</button>
       </div>
 
