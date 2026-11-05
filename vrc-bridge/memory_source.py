@@ -66,8 +66,20 @@ class MemorySource:
         self._pm = None
 
     def _resolve(self, spec: FieldSpec) -> int:
+        """base_offset + an empty offsets list means the value sits directly
+        at module_base + base_offset (a static/global address found within
+        the module's own scanned range -- no pointer to follow). A non-empty
+        offsets list means base_offset points at the first pointer in a
+        chain: dereference through every offset but the last, then add the
+        last one without dereferencing (the field offset inside the final
+        struct) -- the shape Cheat Engine's pointer scanner produces for
+        heap-allocated game state.
+        """
         assert self._pm is not None
-        addr = self._pm.read_longlong(self._module_base + spec.base_offset)
+        addr = self._module_base + spec.base_offset
+        if not spec.offsets:
+            return addr
+        addr = self._pm.read_longlong(addr)
         for off in spec.offsets[:-1]:
             addr = self._pm.read_longlong(addr + off)
         return addr + spec.offsets[-1]

@@ -6,21 +6,37 @@ webapp_url: "https://rcracelog.vercel.app"
 # match it here so the bridge is allowed to push sessions.
 import_token: ""
 
+# The actual process might not be named "VRC PRO.exe" -- check Task
+# Manager's Details tab for the real name while the game is running.
 process_name: "VRC PRO.exe"
 module_name: "VRC PRO.exe"
 poll_hz: 60
 
-# See README.md's "Finding offsets" section. Each entry is a static
-# base_offset (from the module's own base address, stable across runs)
-# plus a pointer chain of offsets to follow down to the value itself.
+# See README.md's "Finding offsets" section. Each entry is base_offset
+# (from the module's own base address, stable across runs) plus an
+# offsets list, which takes one of two shapes:
+#
+#   offsets: []        -- the value sits directly at
+#                          module_base + base_offset (a static/global
+#                          value scanner.py's module-range scan can find
+#                          on its own -- this is what you'll have if
+#                          scanner.py converged to one address for you).
+#   offsets: [a, b, …] -- base_offset points at the first pointer in a
+#                          chain: dereference through every offset but
+#                          the last, then add the last one without
+#                          dereferencing. This is the shape Cheat
+#                          Engine's pointer scanner produces for
+#                          heap-allocated values (most game state that
+#                          scanner.py alone won't find).
+#
 # The values below are placeholders -- they do nothing until replaced
 # with real offsets found via scanner.py or Cheat Engine.
 fields:
-  speed_kph: { base_offset: 0x0, offsets: [0x0], type: float }
-  rpm:       { base_offset: 0x0, offsets: [0x0], type: float }
-  throttle:  { base_offset: 0x0, offsets: [0x0], type: float }
-  brake:     { base_offset: 0x0, offsets: [0x0], type: float }
-  steering:  { base_offset: 0x0, offsets: [0x0], type: float }
-  pos_x:     { base_offset: 0x0, offsets: [0x0], type: float }
-  pos_y:     { base_offset: 0x0, offsets: [0x0], type: float }
-  lap:       { base_offset: 0x0, offsets: [0x0], type: int }
+  speed_kph: { base_offset: 0x0, offsets: [], type: float }
+  rpm:       { base_offset: 0x0, offsets: [], type: float }
+  throttle:  { base_offset: 0x0, offsets: [], type: float }
+  brake:     { base_offset: 0x0, offsets: [], type: float }
+  steering:  { base_offset: 0x0, offsets: [], type: float }
+  pos_x:     { base_offset: 0x0, offsets: [], type: float }
+  pos_y:     { base_offset: 0x0, offsets: [], type: float }
+  lap:       { base_offset: 0x0, offsets: [], type: int }

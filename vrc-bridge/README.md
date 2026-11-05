@@ -38,26 +38,43 @@ Edit `config.yaml`:
 This is the one-time setup cost, same idea as setting up any Cheat
 Engine table:
 
-1. Run VRC Pro, start a practice session.
-2. On the same PC, run:
+1. Run VRC Pro, start a practice session. Check Task Manager's
+   **Details** tab for the game's actual process name -- it isn't
+   necessarily `VRC PRO.exe` (one real install turned out to be
+   `Game_s.exe`).
+2. **Run your terminal as Administrator.** `pymem` needs elevated
+   permissions to open another process's memory; without it you'll get
+   `pymem.exception.CouldNotOpenProcess` immediately.
+3. Run:
    ```
-   python scanner.py "VRC PRO.exe"
+   python scanner.py "<the real process name>.exe"
    ```
    Follow its prompts: enter the car's current speed as a number, drive
    to change it, enter the new value, repeat 3-5 times until it narrows
-   to one or two addresses. Do this once per channel (speed, RPM,
-   throttle, brake, steering, position X/Y, lap).
-3. The scanner's naive scan only covers the main module's own memory.
-   Most game state (anything per-car, per-race) lives on the heap behind
-   a pointer, so you'll likely get zero hits from step 2 alone. In that
+   to one address. Do this once per channel (speed, RPM, throttle,
+   brake, steering, position X/Y, lap). Avoid starting a search on `0`
+   if you can -- it's the single most common value in any program's
+   memory (zeroed fields, null pointers), so it narrows much slower than
+   starting from a distinctive non-zero reading.
+4. When it converges to one address, that value lives directly at a
+   fixed offset from the module's base -- in config.yaml terms, that's
+   `base_offset: 0x<the printed offset>, offsets: []` (see the comments
+   in `config.example.yaml` for what an empty vs. non-empty `offsets`
+   list means). **Verify it before trusting it**: change the value
+   in-game once more and confirm the same address still matches --
+   convergence to one candidate from a small scan is a good sign but not
+   a guarantee.
+5. Not every channel will be this easy -- some game state (especially
+   anything allocated per-car or per-race) lives on the heap behind a
+   pointer, which this scanner's module-only range won't find at all
+   (you'll get zero hits even after several narrowing rounds). In that
    case use **Cheat Engine** instead (free, cheatengine.org): its "Scan
    for changed/unknown value" workflow is the same idea but scans the
    whole process, and its **pointer scanner** / "Find out what accesses
    this address" feature gives you a stable base-address + offset chain
-   that survives game restarts (a raw address doesn't).
-4. Put each channel's chain into `config.yaml` under `fields`, following
-   the `base_offset` + `offsets` shape already there.
-5. Fields you haven't found yet can stay as placeholders -- they just
+   that survives game restarts (a raw address doesn't) -- that's the
+   non-empty `offsets: [a, b, …]` case in config.yaml.
+6. Fields you haven't found yet can stay as placeholders -- they just
    come through as `null`, same as any channel a source can't provide.
    Get speed working first, add the rest incrementally.
 
