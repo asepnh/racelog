@@ -49,13 +49,18 @@ Engine table:
    ```
    python scanner.py "<the real process name>.exe"
    ```
-   Follow its prompts: enter the car's current speed as a number, drive
-   to change it, enter the new value, repeat 3-5 times until it narrows
-   to one address. Do this once per channel (speed, RPM, throttle,
-   brake, steering, position X/Y, lap). Avoid starting a search on `0`
-   if you can -- it's the single most common value in any program's
-   memory (zeroed fields, null pointers), so it narrows much slower than
-   starting from a distinctive non-zero reading.
+   Press Enter to snapshot, then narrow by **direction of change**
+   (`i`ncreased / `d`ecreased / `c`hanged / `s`ame) rather than typing an
+   exact number -- this matters: VRC Pro's on-screen speed is a rounded
+   whole number, but the real float in memory has decimals, so searching
+   for the literal displayed value (e.g. `10`) almost never matches the
+   actual stored value (e.g. `10.3`) and just gets 0 hits every round.
+   Direction-of-change sidesteps that entirely. Accelerate, then tell it
+   `i`; brake, then tell it `d`; repeat 3-6 rounds until it narrows to one
+   address. Do this once per continuous channel (speed, RPM, throttle,
+   brake, steering, position X/Y). An exact-value search (type the number
+   instead of i/d/c/s) still works fine for something like a lap counter,
+   where you know the precise integer.
 4. When it converges to one address, that value lives directly at a
    fixed offset from the module's base -- in config.yaml terms, that's
    `base_offset: 0x<the printed offset>, offsets: []` (see the comments
